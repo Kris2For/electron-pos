@@ -1,21 +1,46 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en" class="no-js">
 
 <head>
-    <meta charset="UTF-8">
-    <title>Hello World!</title>
-    <!-- https://electronjs.org/docs/tutorial/security#csp-meta-tag -->
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="canonical" href="https://html5-templates.com/" />
+    <title></title>
+    <meta name="description" content="A brief page description">
+    <link rel="stylesheet" href="style.css">
+    <script src="jquery.min.js"></script>
+    <script src="jquery-ui.min.js"></script>
+    <script src="script.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#fullpage').fullpage({
+                sectionsColor: ['#1bbc9b', '#4BBFC3', '#7BAABE', 'whitesmoke', '#ccddff'],
+                anchors: ['firstPage', 'secondPage', '3rdPage', '4thpage', 'lastPage'],
+                menu: '#menu',
+            });
+        });
+    </script>
 </head>
 
 <body>
-    <h1>Your app has started</h1>
-    We are using node
-    <script>document.write(process.versions.node)</script>,
-    Chrome
-    <script>document.write(process.versions.chrome)</script>,
-    and Electron
-    <script>document.write(process.versions.electron)</script>.
+
+    <div id="fullpage">
+        <div class="section " id="section0">
+            <h1>POS App</h1>
+            <p>Scroll down to see how to load a different page</p>
+            <p class="introimg">&darr;&#9636;&darr;</p>
+        </div>
+        <div class="section" id="section1">
+            <h1>Add "--url=&lt;URL&gt;" to your shortcut</h1>
+            <p>eg POS-App.exe --url=https://google.com</p>
+        </div>
+        <div class="section" id="section2">
+            <h1>If you are still seeing this</h1>
+            <p>The URL specified is invalid</p>
+        </div>
+    </div>
+
 </body>
 
 </html>

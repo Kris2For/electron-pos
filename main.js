@@ -1,6 +1,13 @@
 const { app, BrowserWindow, Menu, shell } = require('electron')
 const path = require('path')
 const contextMenu = require('electron-context-menu');
+const yargs = require('yargs/yargs')
+const { hideBin } = require('yargs/helpers')
+const argv = yargs(hideBin(process.argv)).argv
+
+if (handleSquirrelEvent(app)) {
+    return;
+}
 
 contextMenu({
     showInspectElement: false,
@@ -37,6 +44,11 @@ if (!singleton) {
     });
 }
 
+function isValidURL(string) {
+    var res = string.match(/(http(s)?:\/\/)(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
+    return (res !== null)
+};
+
 function createWindow() {
 
     win = new BrowserWindow({
@@ -45,13 +57,17 @@ function createWindow() {
         minwidth: 1630,
         minheight: 1000,
         show: false,
-        resizable: false
+        resizable: true
     })
 
     win.removeMenu();
     win.webContents.setUserAgent(`${win.webContents.getUserAgent()} POS-App/1.0`)
 
-    win.loadURL(`https://google.com`)
+    if (argv.url && isValidURL(argv.url)) {
+        win.loadURL(argv.url)
+    } else {
+        win.loadFile('index.html')
+    }
 
     win.on('ready-to-show', () => {
         win.show()
@@ -61,4 +77,58 @@ function createWindow() {
         e.preventDefault();
         shell.openExternal(url);
     });
+
+    win.on('close', function (e) {
+        app.quit()
+    });
 }
+
+function handleSquirrelEvent(application) {
+    if (process.argv.length === 1) {
+        return false;
+    }
+    const ChildProcess = require('child_process');
+    const path = require('path');
+    const appFolder = path.resolve(process.execPath, '..');
+    const rootAtomFolder = path.resolve(appFolder, '..');
+    const updateDotExe = path.resolve(path.join(rootAtomFolder, 'Update.exe'));
+    const exeName = path.basename(process.execPath);
+    const spawn = function (command, args) {
+        let spawnedProcess, error;
+        try {
+            spawnedProcess = ChildProcess.spawn(command, args, {
+                detached: true
+            });
+        } catch (error) { }
+        return spawnedProcess;
+    };
+    const spawnUpdate = function (args) {
+        return spawn(updateDotExe, args);
+    };
+    const squirrelEvent = process.argv[1];
+    switch (squirrelEvent) {
+        case '--squirrel-install':
+        case '--squirrel-updated':
+            // Optionally do things such as:
+            // - Add your .exe to the PATH
+            // - Write to the registry for things like file associations and
+            //   explorer context menus
+            // Install desktop and start menu shortcuts
+            spawnUpdate(['--createShortcut', exeName]);
+            setTimeout(application.quit, 1000);
+            return true;
+        case '--squirrel-uninstall':
+            // Undo anything you did in the --squirrel-install and
+            // --squirrel-updated handlers
+            // Remove desktop and start menu shortcuts
+            spawnUpdate(['--removeShortcut', exeName]);
+            setTimeout(application.quit, 1000);
+            return true;
+        case '--squirrel-obsolete':
+            // This is called on the outgoing version of your app before
+            // we update to the new version - it's the opposite of
+            // --squirrel-updated
+            application.quit();
+            return true;
+    }
+};

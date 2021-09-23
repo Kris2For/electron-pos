@@ -1,19 +1,26 @@
 {
   "name": "POS-App",
   "version": "1.0.0",
-  "description": "",
+  "description": "POS App",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
+    "start": "electron . --url=www.google.com",
+    "build": "electron-packager . --ignore \".git|installers|dist|build.js\" --overwrite ",
+    "setup": "node ./build.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "Kris2For",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^15.0.0"
+    "electron": "^15.0.0",
+    "electron-installer-windows": "^3.0.0",
+    "electron-packager": "^15.4.0",
+    "electron-winstaller": "^5.0.0"
   },
   "dependencies": {
-    "electron-context-menu": "^3.1.1"
+    "electron-context-menu": "^3.1.1",
+    "electron-squirrel-startup": "^1.0.0",
+    "yargs": "^17.2.0"
   }
 }

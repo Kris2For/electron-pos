@@ -102,3 +102,6 @@ dist
 
 # TernJS port file
 .tern-port
+
+installers/
+POS-App-win32-x64
