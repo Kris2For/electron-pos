@@ -45,7 +45,7 @@ if (!singleton) {
 }
 
 function isValidURL(string) {
-    var res = string.match(/(http(s)?:\/\/)(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
+    var res = string.match(/((http(s)?:\/\/))+([-a-zA-Z0-9@:%._\+~#=]{2,256}\.)?[a-z0-9]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
     return (res !== null)
 };
 
@@ -57,7 +57,8 @@ function createWindow() {
         minwidth: 1630,
         minheight: 1000,
         show: false,
-        resizable: true
+        resizable: true,
+        icon: 'evoicon.ico'
     })
 
     win.removeMenu();

@@ -9,7 +9,9 @@ var settings = {
 	exe: 'POS-App.exe',
 	setupExe: 'POS-App-Setup.exe',
 	noMsi: true,
-	description: "POS-App"
+	description: 'POS-App',
+	iconURL: 'https://www.evocycles.co.nz/image/favicon2.png',
+	setupIcon: 'evoicon.ico'
 };
 
 resultPromise = electronInstaller.createWindowsInstaller(settings);
