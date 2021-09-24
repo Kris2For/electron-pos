@@ -4,7 +4,7 @@
   "description": "POS App",
   "main": "main.js",
   "scripts": {
-    "start": "electron . --url=www.google.com",
+    "start": "electron . --url=https://google.com",
     "build": "electron-packager . --ignore \".git|installers|dist|build.js\"  --icon evoIcon.ico --overwrite ",
     "setup": "node ./build.js",
     "test": "echo \"Error: no test specified\" && exit 1"

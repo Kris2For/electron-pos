@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, shell } = require('electron')
+const { app, BrowserWindow, Menu, shell, globalShortcut } = require('electron')
 const path = require('path')
 const contextMenu = require('electron-context-menu');
 const yargs = require('yargs/yargs')
@@ -41,6 +41,14 @@ if (!singleton) {
     })
     app.on("ready", () => {
         createWindow()
+
+        globalShortcut.register('CommandOrControl+Shift+I', () => {
+            win.webContents.openDevTools()
+        })
+
+        globalShortcut.register('CommandOrControl+F5', () => {
+            win.webContents.reloadIgnoringCache()
+        })
     });
 }
 
