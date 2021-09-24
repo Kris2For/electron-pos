@@ -1,6 +1,6 @@
 {
   "name": "POS-App",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "POS App",
   "main": "main.js",
   "scripts": {
