@@ -7,6 +7,7 @@
     "start": "electron . --url=https://google.com",
     "build": "electron-packager . --ignore \".git|installers|dist|build.js\"  --icon evoIcon.ico --overwrite ",
     "setup": "node ./build.js",
+    "compile": "npm run build && npm run setup",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
