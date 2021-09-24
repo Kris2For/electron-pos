@@ -5,6 +5,10 @@ const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')
 const argv = yargs(hideBin(process.argv)).argv
 const updater = require('./updater')
+const Store = require('electron-store');
+
+Store.initRenderer()
+const store = new Store();
 
 
 if (handleSquirrelEvent(app)) {
@@ -75,8 +79,11 @@ function createWindow() {
     win.removeMenu();
     win.webContents.setUserAgent(`${win.webContents.getUserAgent()} POS-App/1.0`)
 
-    if (argv.url && isValidURL(argv.url)) {
-        win.loadURL(argv.url)
+    if (argv.url) store.set('url', argv.url)
+    let url = argv.url || store.get('url')
+
+    if (url) {
+        win.loadURL(url)
     } else {
         win.loadFile('index.html')
     }

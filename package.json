@@ -4,7 +4,7 @@
   "description": "POS App",
   "main": "main.js",
   "scripts": {
-    "start": "electron . --url=https://google.com",
+    "start": "electron .",
     "build": "electron-packager . --ignore \".git|installers|dist|build.js\"  --icon evoIcon.ico --overwrite ",
     "setup": "node ./build.js",
     "compile": "npm run build && npm run setup",
@@ -22,6 +22,7 @@
   "dependencies": {
     "electron-context-menu": "^3.1.1",
     "electron-squirrel-startup": "^1.0.0",
+    "electron-store": "^8.0.1",
     "yargs": "^17.2.0"
   }
 }
