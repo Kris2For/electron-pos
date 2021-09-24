@@ -4,6 +4,8 @@ const contextMenu = require('electron-context-menu');
 const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')
 const argv = yargs(hideBin(process.argv)).argv
+const updater = require('./updater')
+
 
 if (handleSquirrelEvent(app)) {
     return;
@@ -40,6 +42,7 @@ if (!singleton) {
         }
     })
     app.on("ready", () => {
+        updater.init()
         createWindow()
 
         globalShortcut.register('CommandOrControl+Shift+I', () => {
