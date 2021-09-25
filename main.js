@@ -5,11 +5,7 @@ const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')
 const argv = yargs(hideBin(process.argv)).argv
 const updater = require('./updater')
-const Store = require('electron-store');
-
-Store.initRenderer()
-const store = new Store();
-
+const store = require('electron-json-storage');
 
 if (handleSquirrelEvent(app)) {
     return;
@@ -46,17 +42,22 @@ if (!singleton) {
         }
     })
     app.on("ready", () => {
-        updater.init()
+        if (app.isPackaged) updater.init()
         createWindow()
-
-        globalShortcut.register('CommandOrControl+Shift+I', () => {
-            win.webContents.openDevTools()
-        })
-
-        globalShortcut.register('CommandOrControl+F5', () => {
-            win.webContents.reloadIgnoringCache()
-        })
     });
+
+
+    app.on('window-all-closed', () => {
+        if (process.platform !== 'darwin') {
+            app.quit()
+        }
+    })
+
+    app.on('activate', () => {
+        if (mainWindow === null) {
+            createWindow()
+        }
+    })
 }
 
 function isValidURL(string) {
@@ -64,7 +65,7 @@ function isValidURL(string) {
     return (res !== null)
 };
 
-function createWindow() {
+async function createWindow() {
 
     win = new BrowserWindow({
         width: 1650,
@@ -73,16 +74,19 @@ function createWindow() {
         minheight: 1000,
         show: false,
         resizable: true,
-        icon: 'evoicon.ico'
+        icon: 'evoicon.ico',
+        webPreferences: {
+            enableRemoteModule: true
+        }
     })
 
     win.removeMenu();
     win.webContents.setUserAgent(`${win.webContents.getUserAgent()} POS-App/1.0`)
 
     if (argv.url) store.set('url', argv.url)
-    let url = argv.url || store.get('url')
+    let url = argv.url || store.getSync('url')
 
-    if (url) {
+    if (url && typeof (url) === 'string' && isValidURL(url)) {
         win.loadURL(url)
     } else {
         win.loadFile('index.html')
@@ -92,14 +96,22 @@ function createWindow() {
         win.show()
     })
 
-    win.webContents.on('new-window', function (e, url) {
+    win.webContents.setWindowOpenHandler(url => {
         e.preventDefault();
         shell.openExternal(url);
     });
 
-    win.on('close', function (e) {
-        app.quit()
-    });
+    win.on('closed', () => {
+        win = null
+    })
+
+    globalShortcut.register('CommandOrControl+Shift+I', () => {
+        win.webContents.openDevTools()
+    })
+
+    globalShortcut.register('CommandOrControl+F5', () => {
+        win.webContents.reloadIgnoringCache()
+    })
 }
 
 function handleSquirrelEvent(application) {
