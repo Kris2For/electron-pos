@@ -88,7 +88,7 @@ async function createWindow() {
     if (url && typeof (url) === 'string' && isValidURL(url)) {
         win.loadURL(url)
     } else {
-        win.loadFile('index.html')
+        win.loadFile('default-page/index.html')
     }
 
     win.on('ready-to-show', () => {
