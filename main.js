@@ -189,25 +189,11 @@ function handleSquirrelEvent(application) {
 function initAutoUpdater() {
     if (process.platform !== 'linux') {
         // Ask the user if he wants to update if update is available
-        electron.autoUpdater.on(
-            'update-downloaded',
-            (event, releaseNotes, releaseName) => {
-                dialog.showMessageBox(win, {
-                    type: 'question',
-                    buttons: ['Update', 'Cancel'],
-                    defaultId: 0,
-                    message: `A new version is available, do you want to install it now?`,
-                    title: 'Update available'
-                }, response => {
-
-                    if (response === 0) {
-                        electron.autoUpdater.quitAndInstall()
-                    }
-                })
-            }
-        )
-
         electron.autoUpdater.setFeedURL(AUTO_UPDATE_URL)
         electron.autoUpdater.checkForUpdates()
+
+        setInterval(() => {
+            autoUpdater.checkForUpdates();
+        }, 1000 * 60 * 60);
     }
 }
