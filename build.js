@@ -1,5 +1,6 @@
 const fs = require('fs');
-fs.rmSync('installers', { recursive: true });
+
+if (fs.existsSync('installers')) fs.rmSync('installers', { recursive: true });
 
 var electronInstaller = require('electron-winstaller');
 
