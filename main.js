@@ -1,10 +1,14 @@
-const { app, BrowserWindow, Menu, shell, globalShortcut } = require('electron')
-const path = require('path')
+const { app, BrowserWindow, Menu, shell, globalShortcut, dialog } = require('electron')
+const electron = require('electron')
 const contextMenu = require('electron-context-menu');
 const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')
 const argv = yargs(hideBin(process.argv)).argv
-const updater = require('./updater')
+
+const APP_VERSION = require('./package.json').version
+const server = 'https://hazel-rho-khaki.vercel.app'
+const AUTO_UPDATE_URL = `${server}/update/${process.platform}/${APP_VERSION}`
+
 const store = require('electron-json-storage');
 
 if (handleSquirrelEvent(app)) {
@@ -42,10 +46,8 @@ if (!singleton) {
         }
     })
     app.on("ready", () => {
-        if (app.isPackaged) updater.init()
         createWindow()
     });
-
 
     app.on('window-all-closed', () => {
         if (process.platform !== 'darwin') {
@@ -74,14 +76,11 @@ async function createWindow() {
         minheight: 1000,
         show: false,
         resizable: true,
-        icon: 'evoicon.ico',
-        webPreferences: {
-            enableRemoteModule: true
-        }
+        icon: 'evoicon.ico'
     })
 
     win.removeMenu();
-    win.webContents.setUserAgent(`${win.webContents.getUserAgent()} POS-App/1.0`)
+    win.webContents.setUserAgent(`${win.webContents.getUserAgent()} POS-App/${APP_VERSION}`)
 
     if (argv.url) store.set('url', argv.url)
     let url = argv.url || store.getSync('url')
@@ -94,6 +93,7 @@ async function createWindow() {
 
     win.on('ready-to-show', () => {
         win.show()
+        if (app.isPackaged) initAutoUpdater()
     })
 
     win.webContents.setWindowOpenHandler(url => {
@@ -163,3 +163,29 @@ function handleSquirrelEvent(application) {
             return true;
     }
 };
+
+function initAutoUpdater() {
+    if (process.platform !== 'linux') {
+        // Ask the user if he wants to update if update is available
+        electron.autoUpdater.on(
+            'update-downloaded',
+            (event, releaseNotes, releaseName) => {
+                dialog.showMessageBox(win, {
+                    type: 'question',
+                    buttons: ['Update', 'Cancel'],
+                    defaultId: 0,
+                    message: `A new version is available, do you want to install it now?`,
+                    title: 'Update available'
+                }, response => {
+
+                    if (response === 0) {
+                        electron.autoUpdater.quitAndInstall()
+                    }
+                })
+            }
+        )
+
+        electron.autoUpdater.setFeedURL(AUTO_UPDATE_URL)
+        electron.autoUpdater.checkForUpdates()
+    }
+}
