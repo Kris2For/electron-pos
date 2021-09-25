@@ -11,6 +11,8 @@ const AUTO_UPDATE_URL = `${server}/update/${process.platform}/${APP_VERSION}`
 
 const store = require('electron-json-storage');
 
+let url = null
+
 if (handleSquirrelEvent(app)) {
     return;
 }
@@ -83,7 +85,7 @@ async function createWindow() {
     win.webContents.setUserAgent(`${win.webContents.getUserAgent()} POS-App/${APP_VERSION}`)
 
     if (argv.url) store.set('url', argv.url)
-    let url = argv.url || store.getSync('url')
+    url = argv.url || store.getSync('url')
 
     if (url && typeof (url) === 'string' && isValidURL(url)) {
         win.loadURL(url)
@@ -112,6 +114,37 @@ async function createWindow() {
     globalShortcut.register('CommandOrControl+F5', () => {
         win.webContents.reloadIgnoringCache()
     })
+
+    globalShortcut.register('CommandOrControl+Shift+U', () => {
+        updateURL()
+    })
+}
+
+function updateURL() {
+    const prompt = require('electron-prompt');
+    prompt({
+        title: 'Update URL',
+        label: 'URL:',
+        value: typeof (url) === 'string' ? url : '',
+        inputAttrs: {
+            type: 'url'
+        },
+        type: 'input',
+        height: 180,
+        skipTaskbar: false,
+        menuBarVisible: true,
+        alwaysOnTop: true,
+        icon: 'evoicon.ico',
+        buttonLabels: { ok: "Update" }
+    }, win)
+        .then((r) => {
+            if (r !== null && r.trim().length > 0) {
+                store.set('url', r)
+                url = r
+                win.loadURL(url)
+            }
+        })
+        .catch(console.error);
 }
 
 function handleSquirrelEvent(application) {
@@ -140,25 +173,14 @@ function handleSquirrelEvent(application) {
     switch (squirrelEvent) {
         case '--squirrel-install':
         case '--squirrel-updated':
-            // Optionally do things such as:
-            // - Add your .exe to the PATH
-            // - Write to the registry for things like file associations and
-            //   explorer context menus
-            // Install desktop and start menu shortcuts
             spawnUpdate(['--createShortcut', exeName]);
             setTimeout(application.quit, 1000);
             return true;
         case '--squirrel-uninstall':
-            // Undo anything you did in the --squirrel-install and
-            // --squirrel-updated handlers
-            // Remove desktop and start menu shortcuts
             spawnUpdate(['--removeShortcut', exeName]);
             setTimeout(application.quit, 1000);
             return true;
         case '--squirrel-obsolete':
-            // This is called on the outgoing version of your app before
-            // we update to the new version - it's the opposite of
-            // --squirrel-updated
             application.quit();
             return true;
     }
