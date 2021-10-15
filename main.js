@@ -193,7 +193,7 @@ function initAutoUpdater() {
         electron.autoUpdater.checkForUpdates()
 
         setInterval(() => {
-            autoUpdater.checkForUpdates();
+            electron.autoUpdater.checkForUpdates();
         }, 1000 * 60 * 60);
     }
 }
