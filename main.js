@@ -58,7 +58,7 @@ if (!singleton) {
     })
 
     app.on('activate', () => {
-        if (mainWindow === null) {
+        if (win === null) {
             createWindow()
         }
     })
@@ -99,8 +99,19 @@ async function createWindow() {
     })
 
     win.webContents.setWindowOpenHandler(url => {
-        e.preventDefault();
-        shell.openExternal(url);
+        console.log(url)
+        shell.openExternal(url.url);
+        return { action: "deny" }
+    });
+
+    win.webContents.on('will-navigate', (event, newUrl) => {
+        url = win.webContents.getURL()
+
+        if (!newUrl.startsWith(url)) {
+            console.log(`external url - ${newUrl}`)
+            event.preventDefault()
+            shell.openExternal(newUrl);
+        }
     });
 
     win.on('closed', () => {
