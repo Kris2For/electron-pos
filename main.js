@@ -4,6 +4,7 @@ const contextMenu = require('electron-context-menu');
 const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')
 const argv = yargs(hideBin(process.argv)).argv
+const path = require('path')
 
 const APP_VERSION = require('./package.json').version
 const server = 'https://hazel-rho-khaki.vercel.app'
@@ -78,7 +79,10 @@ async function createWindow() {
         minheight: 1000,
         show: false,
         resizable: true,
-        icon: 'evoicon.ico'
+        icon: 'evoicon.ico',
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+        },
     })
 
     win.removeMenu();
@@ -105,10 +109,11 @@ async function createWindow() {
     });
 
     win.webContents.on('will-navigate', (event, newUrl) => {
-        url = win.webContents.getURL()
+        const url = new URL(win.webContents.getURL());
+        const tempUrl = new URL(newUrl);
 
-        if (!newUrl.startsWith(url)) {
-            console.log(`external url - ${newUrl}`)
+        if (url.hostname !== tempUrl.hostname) {
+            console.log(`External hostname`, `Current Hostname: ${url.hostname}`, `New Hostname: ${tempUrl.hostname}`)
             event.preventDefault()
             shell.openExternal(newUrl);
         }
@@ -207,4 +212,9 @@ function initAutoUpdater() {
             electron.autoUpdater.checkForUpdates();
         }, 1000 * 60 * 60);
     }
+}
+
+console.log = function () {
+    const args = Array.prototype.slice.call(arguments)
+    win.webContents.send('console-message', args)
 }
