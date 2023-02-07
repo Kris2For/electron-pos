@@ -1,5 +1,4 @@
-const { app, BrowserWindow, Menu, shell, globalShortcut, dialog } = require('electron')
-const electron = require('electron')
+const { app, BrowserWindow, Menu, autoUpdater, shell, globalShortcut, dialog } = require('electron')
 const contextMenu = require('electron-context-menu');
 const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')
@@ -22,7 +21,7 @@ contextMenu({
     showInspectElement: false,
     showSearchWithGoogle: false,
     prepend: (defaultActions, parameters, browserWindow) => [{
-        label: 'Search Google for “{selection}”',
+        label: 'Search Google for "{selection}"',
         // Only show it when right-clicking text
         visible: parameters.selectionText.trim().length > 0,
         click: () => {
@@ -99,7 +98,6 @@ async function createWindow() {
 
     win.on('ready-to-show', () => {
         win.show()
-        if (app.isPackaged) initAutoUpdater()
     })
 
     win.webContents.setWindowOpenHandler(url => {
@@ -134,6 +132,33 @@ async function createWindow() {
     globalShortcut.register('CommandOrControl+Shift+U', () => {
         updateURL()
     })
+
+    globalShortcut.register('CommandOrControl+Shift+T', () => {
+        if (process.platform !== 'linux' && app.isPackaged) {
+            autoUpdater.setFeedURL(AUTO_UPDATE_URL)
+            autoUpdater.checkForUpdates()
+            msgboxShown = false;
+            autoUpdater.on('update-not-available', (event, releaseNotes, releaseName) => {
+                if (msgboxShown) return
+                msgboxShown = true
+                dialog.showMessageBox({
+                    title: `No Update Available`,
+                    message: `There is no updates avaialble`,
+                    buttons: []
+                });
+            })
+            autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
+                if (msgboxShown) return
+                msgboxShown = true
+                dialog.showMessageBox({
+                    title: `New Update Available`,
+                    message: `A new update has been downloaded`,
+                    detail: `It will be applied automatically when the app is closed`,
+                    buttons: []
+                });
+            })
+        }
+    })
 }
 
 function updateURL() {
@@ -164,28 +189,31 @@ function updateURL() {
 }
 
 function handleSquirrelEvent(application) {
+
     if (process.argv.length === 1) {
         return false;
     }
+
     const ChildProcess = require('child_process');
     const path = require('path');
     const appFolder = path.resolve(process.execPath, '..');
     const rootAtomFolder = path.resolve(appFolder, '..');
     const updateDotExe = path.resolve(path.join(rootAtomFolder, 'Update.exe'));
     const exeName = path.basename(process.execPath);
-    const spawn = function (command, args) {
+
+    const spawnUpdate = function (args) {
         let spawnedProcess, error;
+
         try {
-            spawnedProcess = ChildProcess.spawn(command, args, {
+            spawnedProcess = ChildProcess.spawn(updateDotExe, args, {
                 detached: true
             });
         } catch (error) { }
-        return spawnedProcess;
+
     };
-    const spawnUpdate = function (args) {
-        return spawn(updateDotExe, args);
-    };
+
     const squirrelEvent = process.argv[1];
+
     switch (squirrelEvent) {
         case '--squirrel-install':
         case '--squirrel-updated':
@@ -201,18 +229,6 @@ function handleSquirrelEvent(application) {
             return true;
     }
 };
-
-function initAutoUpdater() {
-    if (process.platform !== 'linux') {
-        // Ask the user if he wants to update if update is available
-        electron.autoUpdater.setFeedURL(AUTO_UPDATE_URL)
-        electron.autoUpdater.checkForUpdates()
-
-        setInterval(() => {
-            electron.autoUpdater.checkForUpdates();
-        }, 1000 * 60 * 60);
-    }
-}
 
 console.log = function () {
     const args = Array.prototype.slice.call(arguments)
