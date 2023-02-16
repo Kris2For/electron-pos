@@ -136,27 +136,32 @@ async function createWindow() {
     globalShortcut.register('CommandOrControl+Shift+T', () => {
         if (process.platform !== 'linux' && app.isPackaged) {
             autoUpdater.setFeedURL(AUTO_UPDATE_URL)
-            autoUpdater.checkForUpdates()
-            msgboxShown = false;
-            autoUpdater.on('update-not-available', (event, releaseNotes, releaseName) => {
-                if (msgboxShown) return
-                msgboxShown = true
-                dialog.showMessageBox({
-                    title: `No Update Available`,
-                    message: `There is no updates avaialble`,
-                    buttons: []
-                });
-            })
-            autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
-                if (msgboxShown) return
-                msgboxShown = true
-                dialog.showMessageBox({
-                    title: `New Update Available`,
-                    message: `A new update has been downloaded`,
-                    detail: `It will be applied automatically when the app is closed`,
-                    buttons: []
-                });
-            })
+            try {
+                autoUpdater.checkForUpdates()
+
+                msgboxShown = false;
+                autoUpdater.on('update-not-available', (event, releaseNotes, releaseName) => {
+                    if (msgboxShown) return
+                    msgboxShown = true
+                    dialog.showMessageBox({
+                        title: `No Update Available`,
+                        message: `There is no updates avaialble`,
+                        buttons: []
+                    });
+                })
+                autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
+                    if (msgboxShown) return
+                    msgboxShown = true
+                    dialog.showMessageBox({
+                        title: `New Update Available`,
+                        message: `A new update has been downloaded`,
+                        detail: `It will be applied automatically when the app is closed`,
+                        buttons: []
+                    });
+                })
+            } catch (error) {
+                console.log(error)
+            }
         }
     })
 }
